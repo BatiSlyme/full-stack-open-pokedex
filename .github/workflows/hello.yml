@@ -11,5 +11,5 @@ jobs:
     steps:
       - name: Say hello
         run: |
-          echo "Hello World!" -date -ls
-          now it is --date ls
+          echo "Hello World!"
+          echo "now it is $(date)"
