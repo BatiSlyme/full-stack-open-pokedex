@@ -26,7 +26,10 @@ jobs:
 
       - name: Test
         run: npm test
-
+        
+      - name: install browser dependencies
+        run: sudo npx playwright install-deps 
+        
       - name: Install P|laywright
         run: npx playwright install 
       
