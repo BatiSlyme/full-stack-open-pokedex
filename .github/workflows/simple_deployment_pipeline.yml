@@ -22,7 +22,10 @@ jobs:
         run: npm run eslint
 
       - name: Build
-        run: npm run build  # Fixed indentation
+        run: npm run build
 
       - name: Test
-        run: npm test  # Fixed indentation
+        run: npm test
+
+      - name: Test Playwright
+        run: npm test:e2e
