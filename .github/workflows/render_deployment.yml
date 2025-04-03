@@ -12,6 +12,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      
+      - name: Debug Secrets
+        run: |
+          echo "Checking if secrets are set..."
+          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
+            echo "RENDER_API_KEY is missing!"
+          else
+            echo "RENDER_API_KEY is set."
+          fi
+
+          if [ -z "${{ secrets.RENDER_SERVICE_ID }}" ]; then
+            echo "RENDER_SERVICE_ID is missing!"
+          else
+            echo "RENDER_SERVICE_ID is set."
+          fi
+
 
       - name: Deploy using Render API
         run: |
