@@ -47,9 +47,9 @@ jobs:
 
   tag_release:
     needs: [ci_pipeline]
-    if: ${{github.ref == 'refs/heads/main'}} && 
-        ${{github.event_name == 'push'}} && 
-        ${{github.env.SKIP != 'true'}}
+    if: github.ref == 'refs/heads/main' && 
+        github.event_name == 'push' && 
+        github.env.SKIP != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -70,10 +70,10 @@ jobs:
   deploy_to_render:
       needs: [tag_release]
       runs-on: ubuntu-latest
-      if: >
-        ${{github.ref == 'refs/heads/main'}} &&
-        ${{github.event_name == 'push'}} &&
-        ${{github.env.SKIP != 'true'}}
+      if:
+        github.ref == 'refs/heads/main' &&
+        github.event_name == 'push' &&
+        github.env.SKIP != 'true'
       steps:
       - name: Checkout repository
         uses: actions/checkout@v4
