@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 0  # Critical for tag actions (fetches full git history)
 
       - name: Auto-Tag Version
-        uses: anothrNick/github-tag-action@v1.74.0
+        uses: anothrNick/github-tag-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true              # Generates tags like "v1.0.0"
