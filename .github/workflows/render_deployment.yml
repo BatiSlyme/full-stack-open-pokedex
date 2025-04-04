@@ -11,7 +11,12 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' }}
+    # Only deploy if:
+    # 1. The triggering workflow succeeded, AND
+    # 2. It was triggered by a push to main
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
 
     steps:
       - name: Checkout repository
