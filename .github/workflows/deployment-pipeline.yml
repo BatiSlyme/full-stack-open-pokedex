@@ -1,4 +1,4 @@
-name: Deployment pipeline
+name: Deployment Pipeline
 
 on:
   push:
@@ -9,22 +9,23 @@ on:
     types: [opened, synchronize]
 
 permissions:
-  contents: write  # Needed for pushing tags
+  contents: write  # Required for tagging/releases
 
 jobs:
-  simple_deployment_pipeline:
-    runs-on: ubuntu-20.04
+  ci_pipeline:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'  # Caches node_modules for faster runs
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci  # Clean install (faster & more reliable than npm install)
 
-      - name: Check style
+      - name: Lint code
         run: npm run eslint
 
       - name: Build
@@ -33,27 +34,28 @@ jobs:
       - name: Run unit tests
         run: npm test
 
-      - name: Install browser dependencies
-        run: sudo npx playwright install-deps 
+      - name: Setup Playwright
+        run: |
+          sudo npx playwright install-deps
+          npx playwright install
 
-      - name: Install Playwright
-        run: npx playwright install 
-
-      - name: Run Playwright tests
+      - name: Run E2E tests
         run: npm run test:e2e
 
   tag_release:
-    needs: [simple_deployment_pipeline]
+    needs: [ci_pipeline]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-20.04
-    permissions:
-      contents: write
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Critical for tag actions (fetches full git history)
 
-      - name: Tag with github-tag-action
-        uses: anothrNick/github-tag-action@v1.43.0 
+      - name: Auto-Tag Version
+        uses: anothrNick/github-tag-action@v1.74.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
-          PRERELEASE: false
+          WITH_V: true              # Generates tags like "v1.0.0"
+          DEFAULT_BUMP: patch       # Auto-increments patch version (1.0.0 → 1.0.1)
+          RELEASE_BRANCHES: main    # Only tag on main branch
+          TAG_PREFIX: ""            # Optional: Add prefix like "app-" if needed
