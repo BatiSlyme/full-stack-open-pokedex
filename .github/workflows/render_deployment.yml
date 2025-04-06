@@ -1,14 +1,22 @@
 name: Deploy to Render
 
+
 on:
+ 
   workflow_run:
-    workflows: ["Deployment pipeline"]  # Name of the first workflow
+    workflows: ["Deployment Pipeline"]  # Name of the first workflow
     types:
       - completed
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Only deploy if:
+    # 1. The triggering workflow succeeded, AND
+    # 2. It was triggered by a push to main
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
 
     steps:
       - name: Checkout repository

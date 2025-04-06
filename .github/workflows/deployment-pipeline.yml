@@ -1,0 +1,100 @@
+name: Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+permissions:
+  contents: write  # Required for tagging/releases
+
+jobs:
+  ci_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'  # Caches node_modules for faster runs
+
+      - name: Install dependencies
+        run: npm ci  # Clean install (faster & more reliable than npm install)
+
+      - name: Lint code
+        run: npm run eslint
+
+      - name: Build
+        run: npm run build
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Setup Playwright
+        run: |
+          sudo npx playwright install-deps
+          npx playwright install
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+  tag_release:
+    needs: [ci_pipeline]
+    if: github.ref == 'refs/heads/main' && 
+        github.event_name == 'push' && 
+        !contains(join(github.event.commits.*.message, ' '), '#skip')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Critical for tag actions (fetches full git history)
+
+      - name: Auto-Tag Version
+        uses: anothrNick/github-tag-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true              # Generates tags like "v1.0.0"
+          DEFAULT_BUMP: patch       # Auto-increments patch version (1.0.0 → 1.0.1)
+          RELEASE_BRANCHES: main    # Only tag on main branch
+          TAG_PREFIX: ""            # Optional: Add prefix like "app-" if needed
+          SKIP_COMMIT_MESSAGE: '#no-release'  # Alternative to your SKIP env
+          DRY_RUN: false  # Set to true for testing
+
+  deploy_to_render:
+      needs: [tag_release]
+      runs-on: ubuntu-latest
+      if:
+        github.ref == 'refs/heads/main' &&
+        github.event_name == 'push' &&
+        !contains(join(github.event.commits.*.message, ' '), '#skip')
+      steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Debug Secrets
+        run: |
+          echo "Checking if secrets are set..."
+          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
+            echo "RENDER_API_KEY is missing!"
+          else
+            echo "RENDER_API_KEY is set."
+          fi
+
+          if [ -z "${{ secrets.RENDER_SERVICE_ID }}" ]; then
+            echo "RENDER_SERVICE_ID is missing!"
+          else
+            echo "RENDER_SERVICE_ID is set."
+          fi
+
+
+      - name: Deploy using Render API
+        run: |
+          curl -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys" \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+          -H "Accept: application/json" \
+          -H "Content-Type: application/json" \
+          --data '{}'
