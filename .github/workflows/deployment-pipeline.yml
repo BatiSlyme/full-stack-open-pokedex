@@ -41,7 +41,18 @@ jobs:
 
       - name: Run E2E tests
         run: npm run test:e2e
-
+        
+      - name: Notify Discord
+        uses: rjstone/discord-webhook-notify@v1.0.4
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: "GitHub Actions"
+          avatarUrl: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+          content: |
+            ✅ Build was successful!
+            🏷️ Branch: `${{ github.ref }}`
+            🔗 [View Commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+            
   tag_release:
     needs: [ci_pipeline]
     if: github.ref == 'refs/heads/main' && 
