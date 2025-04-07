@@ -48,7 +48,7 @@ jobs:
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
           username: "GitHub Actions"
           avatarUrl: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-          content: |
+          text: |
             ✅ Build was successful!
             🏷️ Branch: `${{ github.ref }}`
             🔗 [View Commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
