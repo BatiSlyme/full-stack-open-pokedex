@@ -50,7 +50,7 @@ jobs:
           username: "GitHub Actions"
           avatarUrl: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
           severity: info
-          content: |
+          text: |
             ✅ Build was successful!
             🏷️ Branch: `${{ github.ref }}`
             🔗 [View Commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
